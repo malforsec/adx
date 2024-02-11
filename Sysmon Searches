@@ -44,11 +44,7 @@ sysmon
 | summarize count() by host_hostname, DestIP
 | sort by count_ desc
 
-//find powershell logs
-event
-| where agent_hostname has "<hostname>"
-| where event_code in (4104,800)
-| project _timestamp, file_name, message
+
 
 // find proc access
 sysmon 
