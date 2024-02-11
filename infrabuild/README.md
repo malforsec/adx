@@ -1,6 +1,6 @@
-How to build the infra
+# How to build the infra
 
-# prereqs to use azure PS, Bicep cli and connect to Azure:
+## prereqs to use azure PS, Bicep cli and connect to Azure:
 https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deploy-powershell
 
 Azure PS:
