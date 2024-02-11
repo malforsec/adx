@@ -1,0 +1,113 @@
+Suricata searches
+
+
+// create table with local ips
+.set-or-replace localips <|
+datatable(ip:string)
+["", "", ""];
+
+//find all suricata alerts where local ip is dest_ip
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where alert.dest_ip in (localips)
+|summarize count() by tostring(alert.src_ip), tostring(alert.dest_ip), tostring(alert.alert.signature)
+
+//find all suricata alerts where local ip is source_ip
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where alert.source_ip in (localips)
+|summarize count() by tostring(alert.src_ip), tostring(alert.dest_ip), tostring(alert.alert.signature)
+
+// find all suricata alerts based on source and destination ip
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+|summarize count() by tostring(alert.src_ip), tostring(alert.dest_ip), tostring(alert.alert.signature)
+
+// find all suricata alerts
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| summarize count() by tostring(alert.alert.signature), tostring(alert.alert.signature_id)
+| sort by count_ desc
+
+//interesting findings below this line
+//looks like we catch all exes with this one
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| where alert.alert.signature_id == "2025701"
+| join kind=inner 
+    (
+    zeek)
+    on network_community_id
+| where file_name contains "exe"
+| summarize min(tostring(alert.timestamp)) by tostring(alert.src_ip), tostring(alert.dest_ip), tostring(alert.dest_port), tostring(alert.alert.signature), tostring(file_name), tostring(file_path), tostring(alert.src_port)
+| project-rename timestamp=min_alert_timestamp, src_ip=alert_src_ip, dest_ip=alert_dest_ip, dest_port=alert_dest_port, src_port=alert_src_port, alert_signatur=alert_alert_signature, filename=file_name, path=file_path
+| project todatetime(timestamp), src_ip, src_port,  dest_ip, dest_port, alert_signatur,filename, path
+
+
+
+//Several exe files distributed over SMB
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| where alert.alert.signature_id == "2025699"
+| join kind=inner 
+    (
+    zeek)
+    on network_community_id 
+| project alert.timestamp, alert.flow.start, alert.src_ip, alert.src_port, alert.dest_ip, alert.dest_port, alert.alert.signature, network_protocol, file_name, file_path, event_action, file_ctime, file_mtime, network_community_id
+
+
+// endpoint mapper events (port 135)
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| where alert.alert.signature_id == "2027237"
+| join kind=inner 
+    (
+    zeek)
+    on network_community_id 
+| project alert.timestamp, alert.flow.start, alert.src_ip, alert.dest_ip, alert.dest_port, alert.alert.signature, network_protocol, file_name, file_path, event_action, file_ctime, file_mtime, network_community_id
+
+
+//ET POLICY Powershell Command With Encoded Argument Over SMB - possible Lateral Movement
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| where alert.alert.signature_id == "2027172"
+| join kind=inner 
+    (
+    zeek)
+    on network_community_id 
+| project alert.timestamp, alert.flow.start, alert.src_ip, alert.src_port, alert.dest_ip, alert.dest_port, alert.alert.signature, network_protocol, file_name, file_path, event_action, file_ctime, file_mtime, network_community_id
+
+|summarize count() by alert.timestamp, alert.flow.start, alert.src_ip, alert.dest_ip, alert.dest_port, alert.alert.signature, network_protocol, file_name, file_path, event_action, file_ctime, file_mtime, network_community_id
+
+
+
+//checked but found uninteresting below this line
+eve
+| extend alert=parse_json(event_original)
+| project network_community_id, alert
+| where (alert.source_ip in (localips) or alert.dest_ip in (localips))
+| where alert.alert.signature_id == "2018959"
+| join kind=inner 
+    (
+    zeek)
+    on network_community_id 
+| project alert.timestamp, alert.flow.start, alert.src_ip, alert.dest_ip, alert.dest_port, alert.alert.signature, network_protocol, url_original, url_domain, url_port, http_request, http_response, destination_as
+
+
+
+
+
