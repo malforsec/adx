@@ -6,11 +6,13 @@
 | extend wsname=extract('(Workstation Name:.)(.*)', 2, message)
 | summarize count() by wsname
 
+//
 event
 | where event_code in (4779)
 | extend wsname=extract('(Client Name:.)(.*)', 2, message)
 | summarize count() by wsname
 
+//
 event
 | search kind=case_sensitive "PoWerSHElL"
 | project _timestamp, message
