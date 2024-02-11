@@ -1,18 +1,41 @@
+Event Searches
 
 
+// create table with local ips
+.set-or-replace localips <|
+datatable(ip:string)
+["10.10.10.1","10.10.10.2"];
 
-// find logons event
+// find hostnames that was logged on from
+event
 | where event_code in (4624)
 | extend wsname=extract('(Workstation Name:.)(.*)', 2, message)
 | summarize count() by wsname
 
-//
+// find hostnames that was logged on from
 event
 | where event_code in (4779)
 | extend wsname=extract('(Client Name:.)(.*)', 2, message)
 | summarize count() by wsname
 
-//
+// find case sensitive strings
 event
-| search kind=case_sensitive "PoWerSHElL"
+| search kind=case_sensitive "PoWeRsHeLl"
 | project _timestamp, message
+
+//find logontypes for a user
+event
+| where event_code has "4624" and user_name has "username"
+| where source_ip in (localips)
+| extend LogonType=extract('(Logon.Type:..)([0-9]{1,2})', 2, message, typeof(int))
+| project source_ip, source_port, host_name, LogonType
+
+//Find kerberos service tickets (Should possibly look for weak signed tickets for kerberoasting)
+event
+| where event_code has "4769"
+| search "msspsupport"
+| extend service_name=extract('(Service.Name:..)(.*)', 2, message)
+| extend failure_code=extract('(Failure.Code:..)(.*)', 2, message)
+| extend client_address=extract('(Client.Address:..)(.*)', 2, message)
+| summarize count() by _timestamp, user_name, host_hostname, service_name, client_address
+| sort by _timestamp
