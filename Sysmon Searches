@@ -68,17 +68,7 @@ sysmon
 | extend parent_process_name=extract('(ParentImage:.)(.*)', 2, message)
 | project process_name, parent_process_name, cmdline, parent_cmdline, message
 
-// find hostnames that logged on
-event
-| where event_code in (4624)
-| extend wsname=extract('(Workstation Name:.)(.*)', 2, message)
-| summarize count() by wsname
 
-// find hostnames that logged on
-event
-| where event_code in (4779)
-| extend wsname=extract('(Client Name:.)(.*)', 2, message)
-| summarize count() by wsname
 
 //look for proc starts that conatains <something>
 sysmon
