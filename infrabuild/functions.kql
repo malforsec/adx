@@ -1,7 +1,106 @@
-//kql functions
-//create function that extend sysmon events
+.show tables
+
+.show functions
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") alert() {
+    zsuricataraw
+    //| where _timestamp between (datetime("2024-02-13 11:35:00") .. datetime("2024-02-14 06:35:00")) or _timestamp between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
+    | where source_ip in~ (localips) or destination_ip in~ (localips)
+}
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") mdatp() {
+    zmdatpraw
+    | where Timestamp between (datetime("2024-02-13 11:45:00") .. datetime("2024-02-14 06:35:00")) or Timestamp between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
+}
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") event() {
+    zeventraw
+    | where _timestamp between (datetime("2024-02-13 11:35:00") .. datetime("2024-02-14 06:35:00")) or _timestamp between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
+    | extend User=extract('(User:.)(.*)', 2, message)
+    | extend SessionID=extract('(Session ID:.)(.*)', 2, message)
+    | extend ServiceFileName=extract('(Service File Name:.)(.*)', 2, message)
+    | extend ServiceType=extract('(Service Type:.)(.*)', 2, message)
+    | extend ServiceStartType=extract('(Service Start Type:.)(.*)', 2, message)
+    | extend ServiceAccount=extract('(Service Account:.)(.*)', 2, message)
+    | extend SourceNetworkAddress=extract('(Source Network Address:.)(.*)', 2, message)
+    | extend TargetLogonId = winlog_event_data["TargetLogonId"]
+    | extend CommandLine =  winlog_event_data["CommandLine"]
+    | extend SubjectLogonIdextend = winlog_event_data["SubjectLogonIdextend"]
+    | extend SubjectUserSid = winlog_event_data["SubjectUserSid"]
+    | extend ProcessId = winlog_event_data["ProcessId"]
+    | extend TargetUserSid = winlog_event_data["TargetUserSid"]
+    | extend SubjectUserName = winlog_event_data["SubjectUserName"]
+    | extend TargetDomainName = winlog_event_data["TargetDomainName"]
+    | extend TargetUserName = winlog_event_data["TargetUserName"]
+    | extend MandatoryLabel = winlog_event_data["MandatoryLabel"]
+    | extend TokenElevationType = winlog_event_data["TokenElevationType"]
+    | extend SubjectDomainName = winlog_event_data["SubjectDomainName"]
+    | extend ServiceName = winlog_event_data["ServiceName"]
+    | extend ImagePath = winlog_event_data["ImagePath"]
+    | extend StartType = winlog_event_data["StartType"]
+    | extend AccountName = winlog_event_data["AccountName"]
+    | extend SubjectLogonId = winlog_event_data["SubjectLogonId"]
+    | extend SubjectUserSid = winlog_event_data["SubjectUserSid"]
+    | extend SubjectUserName = winlog_event_data["SubjectUserName"]
+    | extend SubjectDomainName = winlog_event_data["SubjectDomainName"]
+    | extend IpAddress = winlog_event_data["IpAddress"]
+    | extend IpPort = winlog_event_data["IpPort"]
+    | extend AccessList = winlog_event_data["AccessList"]
+    | extend ObjectType = winlog_event_data["ObjectType"]
+    | extend AccessMask = winlog_event_data["AccessMask"]
+    | extend ShareName = winlog_event_data["ShareName"]
+    | extend ShareLocalPath = winlog_event_data["ShareLocalPath"]
+    | extend RelativeTargetName = winlog_event_data["RelativeTargetName"]
+    | extend AccessReason = winlog_event_data["AccessReason"]
+    | extend TargetLogonId = winlog_event_data["TargetLogonId"]
+    | extend SubjectLogonId = winlog_event_data["SubjectLogonId"]
+    | extend SubjectUserSid = winlog_event_data["SubjectUserSid"]
+    | extend TargetUserSid = winlog_event_data["TargetUserSid"]
+    | extend SubjectUserName = winlog_event_data["SubjectUserName"]
+    | extend TargetDomainName = winlog_event_data["TargetDomainName"]
+    | extend TargetUserName = winlog_event_data["TargetUserName"]
+    | extend SubjectDomainName = winlog_event_data["SubjectDomainName"]
+    | extend VirtualAccount = winlog_event_data["VirtualAccount"]
+    | extend LogonType = winlog_event_data["LogonType"]
+    | extend LogonGuid = winlog_event_data["LogonGuid"]
+    | extend LmPackageName = winlog_event_data["LmPackageName"]
+    | extend ElevatedToken = winlog_event_data["ElevatedToken"]
+    | extend TransmittedServices = winlog_event_data["TransmittedServices"]
+    | extend TargetOutboundDomainName = winlog_event_data["TargetOutboundDomainName"]
+    | extend KeyLength = winlog_event_data["KeyLength"]
+    | extend LogonProcessName = winlog_event_data["LogonProcessName"]
+    | extend ImpersonationLevel = winlog_event_data["ImpersonationLevel"]
+    | extend TargetOutboundUserName = winlog_event_data["TargetOutboundUserName"]
+    | extend TargetLinkedLogonId = winlog_event_data["TargetLinkedLogonId"]
+    | extend IpAddress = winlog_event_data["IpAddress"]
+    | extend RestrictedAdminMode = winlog_event_data["RestrictedAdminMode"]
+    | extend IpPort = winlog_event_data["IpPort"]
+    | extend AuthenticationPackageName = winlog_event_data["AuthenticationPackageName"]
+    | extend SessionName = winlog_event_data["SessionName"]
+    | extend ClientName = winlog_event_data["ClientName"]
+    | extend ClientAddress = winlog_event_data["ClientAddress"]
+    | extend AccountDomain = winlog_event_data["AccountDomain"]
+ }
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") sigma() {
+    zsigmaraw
+    //| where Timestamp between (datetime("2024-02-13 11:45:00") .. datetime("2024-02-14 06:35:00")) or Timestamp between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
+}
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") memorytimeline() {
+    zmemorytimelineraw
+}
+
+.create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") zeek() {
+    zzeekraw
+    | where _timestamp between (datetime("2024-02-13 11:45:00") .. datetime("2024-02-14 06:35:00")) or _timestamp  between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
+    | where source_ip in (localips) or destination_ip in (localips)
+}
+
+
 .create-or-alter function with (folder = "ETL_UpdatePolicyFunctions", skipvalidation = "true") sysmon() {
     zsysmonraw
+    | where _timestamp between (datetime("2024-02-13 10:45:00") .. datetime("2024-02-14 06:35:00")) or _timestamp between (datetime("2024-03-01 01:50:00") .. datetime("2024-03-02 03:05:00"))
     | extend Archived=extract('(Archived:.)(.*)', 2, message)
     | extend CallTrace=extract('(CallTrace:.)(.*)', 2, message)
     | extend ClientInfo=extract('(ClientInfo:.)(.*)', 2, message)
@@ -74,4 +173,5 @@
     | extend Type=extract('(Type:.)(.*)', 2, message)
     | extend User=extract('(User:.)(.*)', 2, message)
     | extend UtcTime=extract('(UtcTime:.)(.*)', 2, message)
+    | extend SourceProcessName = substring(SourceImage, strlen(SourceImage) - indexof(reverse(SourceImage), @"\") - 1 + 1)
 }
